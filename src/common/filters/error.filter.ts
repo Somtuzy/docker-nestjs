@@ -7,8 +7,7 @@ import {
   HttpException,
   HttpStatus,
   UnauthorizedException,
-  InternalServerErrorException,
-  ExecutionContext
+  NotFoundException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
@@ -47,19 +46,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message: string[] | string;
       };
       let errorMessage: string;
-
-      if (exception instanceof ForbiddenException) {
-        errorMessage =
-          'Forbidden resource: You are not allowed to take this action or access this resource.';
-      } else if (exception instanceof UnauthorizedException) {
-        errorMessage =
-          'Unauthorized access: You need to be logged in to take this action.';
-      } else if (typeof errorResponse.message === 'string') {
+      
+      if (exception instanceof ForbiddenException) 
+        errorMessage = 'Forbidden Resource: You are not allowed to take this action or access this resource.';
+      else if (exception instanceof UnauthorizedException)
+        errorMessage =  'Unauthorized Access: You need to be logged in to take this action.';
+      else if (exception instanceof NotFoundException)
+        errorMessage = 'Resource Not Found: This route does not exist';
+      else if (typeof errorResponse.message === 'string')
         errorMessage = errorResponse.message;
-      } else {
+      else 
         errorMessage = errorResponse.message[0];
-      }
-
+      
       return response.status(status).json({
         success: false,
         error: errorMessage,
@@ -69,6 +67,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       });
     }
 
+    // when something is wrong with the database connection attempt
     if (exception instanceof mongoose.Error.ValidationError) {
       const errorMessages: string[] = Object.values(exception.errors).map(
         (e) => e.message
@@ -80,6 +79,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       });
     }
 
+    // when something is wrong with the server
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: 'Something went wrong. Please try again later.'

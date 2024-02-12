@@ -1,15 +1,15 @@
 version: "2.24.5"
 services:
-  dev:
+  nestapp_dev:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         NODE_ENV: dev
-    container_name: devnest_c
+    container_name: nestapp_dev_c
     ports:
-      - '8000:6000'
-    image: dev:nest
+      - '8000:9090'
+    image: nestapp_dev:v1
     environment:
       - NODE_ENV=dev
     volumes:
@@ -18,15 +18,15 @@ services:
       # - ./node_modules:/app/node_modules
       # to create an anonymous volume without linking host OS to container OS (fixes bcrypt issue)
       - /app/node_modules 
-  live:
+  nestapp_live:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         NODE_ENV: live
-    container_name: livenest_c
+    container_name: nestapp_live_c
     ports:
-      - '8080:6000'
-    image: live:nest
+      - '8080:9090'
+    image: nestapp_live:v1
     environment:
       - NODE_ENV=live

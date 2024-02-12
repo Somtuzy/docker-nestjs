@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
-import { ConfigsModule } from './config.module';
+import { ConfigsModule } from './configs/config.module';
+import { NotFoundMiddleware } from './auth/middlewares/not-found.middleware';
 
 @Module({
   imports: [ConfigsModule, UsersModule, AuthModule, PostsModule],
@@ -12,6 +13,8 @@ import { ConfigsModule } from './config.module';
   controllers: [AppController]
 })
 
-export class AppModule {
-  constructor(private appService: AppService) {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(NotFoundMiddleware).forRoutes('*');
+  }
 }

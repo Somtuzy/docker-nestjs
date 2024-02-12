@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { HttpExceptionFilter } from './common/filters/error.filter';
 import { AppService } from './app.service';
-import { AllExceptionsFilter } from './common/filters/exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -14,22 +13,20 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const appService = app.get(AppService);
-
-  app.setGlobalPrefix(configService.get('app.apiPrefix'), {
-    // exclude: ['/']
-  });
+  const apiVersion = configService.get('app.apiPrefix')
+  const PORT = configService.get('app.port')
+  const logger = appService.logMessage
+  
+  app.setGlobalPrefix(apiVersion, { exclude: ['', 'health', 'docs'] });
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
-    // forbidNonWhitelisted: true,
     transform: true
   }))
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  await app.listen(configService.get('app.port'));
-  appService.logMessage('Connected')
-  console.info(
-    `Application server listening on port ${configService.get('app.port')}`
-  );
+  await app.listen(PORT);
+  logger('Connected')
+  logger(`Application server listening on port ${configService.get('app.port')}`);
 }
 
 bootstrap();
